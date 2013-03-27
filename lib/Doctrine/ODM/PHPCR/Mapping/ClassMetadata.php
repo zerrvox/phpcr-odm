@@ -1007,9 +1007,21 @@ class ClassMetadata implements ClassMetadataInterface
      */
     public function isSingleValuedAssociation($fieldName)
     {
-        return isset($this->childMappings[$fieldName])
+        if (
+            isset($this->childMappings[$fieldName])
             || $fieldName === $this->parentMapping
-        ;
+        ) {
+            return true;
+        }
+
+        if (
+            isset($this->referenceMappings[$fieldName])
+            && ($this->mappings[$fieldName]['type'] & self::MANY_TO_ONE)
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1017,7 +1029,8 @@ class ClassMetadata implements ClassMetadataInterface
      */
     public function isCollectionValuedAssociation($fieldName)
     {
-        return isset($this->referenceMappings[$fieldName])
+        return (isset($this->referenceMappings[$fieldName])
+            && ($this->mappings[$fieldName]['type'] & self::MANY_TO_MANY))
             || isset($this->referrersMappings[$fieldName])
             || isset($this->mixedReferrersMappings[$fieldName])
             || isset($this->childrenMappings[$fieldName])
