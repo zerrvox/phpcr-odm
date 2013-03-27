@@ -637,7 +637,7 @@ class ClassMetadata implements ClassMetadataInterface
         }
 
         $mapping['sourceDocument'] = $this->name;
-        if (isset($mapping['referringDocument']) && strpos($mapping['referringDocument'], '\\') === false && strlen($this->namespace)) {
+        if (strpos($mapping['referringDocument'], '\\') === false && strlen($this->namespace)) {
             $mapping['referringDocument'] = $this->namespace . '\\' . $mapping['referringDocument'];
         }
 
@@ -1099,10 +1099,14 @@ class ClassMetadata implements ClassMetadataInterface
             throw new InvalidArgumentException("Association name expected, '$fieldName' is not an association in '{$this->name}'.");
         }
 
-        if (in_array($this->mappings[$fieldName]['type'], array('referrers', 'mixedreferrers', 'children', 'child', 'parent'))) {
+        if (in_array($this->mappings[$fieldName]['type'], array('mixedreferrers', 'children', 'child', 'parent'))) {
             return null;
         }
 
+        if ($this->mappings[$fieldName]['type'] == 'referrers') {
+            return $this->mappings[$fieldName]['referringDocument'];
+        }
+        // ReferenceOne or ReferenceMany
         return $this->mappings[$fieldName]['targetDocument'];
     }
 
