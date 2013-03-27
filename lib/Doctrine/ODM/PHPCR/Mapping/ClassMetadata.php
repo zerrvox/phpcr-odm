@@ -1015,7 +1015,7 @@ class ClassMetadata implements ClassMetadataInterface
         }
 
         if (
-            isset($this->referenceMappings[$fieldName])
+            in_array($fieldName, $this->referenceMappings)
             && ($this->mappings[$fieldName]['type'] & self::MANY_TO_ONE)
         ) {
             return true;
@@ -1029,7 +1029,7 @@ class ClassMetadata implements ClassMetadataInterface
      */
     public function isCollectionValuedAssociation($fieldName)
     {
-        return (isset($this->referenceMappings[$fieldName])
+        return (in_array($fieldName, $this->referenceMappings)
             && ($this->mappings[$fieldName]['type'] & self::MANY_TO_MANY))
             || isset($this->referrersMappings[$fieldName])
             || isset($this->mixedReferrersMappings[$fieldName])
@@ -1095,8 +1095,12 @@ class ClassMetadata implements ClassMetadataInterface
      */
     public function getAssociationTargetClass($fieldName)
     {
-        if (!in_array($fieldName, $this->referenceMappings)) {
+        if (!$this->hasAssociation($fieldName)) {
             throw new InvalidArgumentException("Association name expected, '$fieldName' is not an association in '{$this->name}'.");
+        }
+
+        if (in_array($this->mappings[$fieldName]['type'], array('referrers', 'mixedreferrers', 'children', 'child', 'parent'))) {
+            return null;
         }
 
         return $this->mappings[$fieldName]['targetDocument'];
